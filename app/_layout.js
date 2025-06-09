@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { AuthProvider, useAuth } from '../contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 
 // Loading screen component
