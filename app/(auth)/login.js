@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,55 +9,17 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-  Dimensions,
-  Animated,
   StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
-
-const { width, height } = Dimensions.get('window');
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [focusedInput, setFocusedInput] = useState(null);
-
-  // Animation values
-  const logoScale = useRef(new Animated.Value(0)).current;
-  const formTranslateY = useRef(new Animated.Value(50)).current;
-  const formOpacity = useRef(new Animated.Value(0)).current;
-  const spinValue = useRef(new Animated.Value(0)).current;
-  const buttonScale = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    // Logo entrance animation
-    Animated.spring(logoScale, {
-      toValue: 1,
-      tension: 100,
-      friction: 8,
-      useNativeDriver: true,
-    }).start();
-
-    // Form entrance animation
-    Animated.parallel([
-      Animated.timing(formTranslateY, {
-        toValue: 0,
-        duration: 800,
-        delay: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(formOpacity, {
-        toValue: 1,
-        duration: 800,
-        delay: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
+  const { login, demoLogin, isLoading } = useAuth();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -65,262 +27,156 @@ export default function LoginScreen() {
       return;
     }
 
-    // Button press animation
-    Animated.sequence([
-      Animated.timing(buttonScale, {
-        toValue: 0.95,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(buttonScale, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    setIsLoading(true);
-
-    // Loading spinner animation
-    const spinAnimation = Animated.loop(
-      Animated.timing(spinValue, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      })
-    );
-    spinAnimation.start();
-
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false);
-      spinAnimation.stop();
-      spinValue.setValue(0);
-      Alert.alert('Success', 'Welcome back! 🎉', [
-        {
-          text: 'Continue',
-          onPress: () => {
-            // Navigate to main app - you'll implement this later
-            console.log('Navigate to main app');
-          },
-        },
-      ]);
-    }, 2000);
+    try {
+      const result = await login(email, password);
+      if (result.success) {
+        // Navigation will happen automatically due to auth state change
+        Alert.alert('Success', result.message);
+      }
+    } catch (error) {
+      Alert.alert('Login Failed', error.message);
+    }
   };
 
-  const spin = spinValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
+  const handleDemoLogin = async () => {
+    try {
+      const result = await demoLogin();
+      if (result.success) {
+        Alert.alert('Demo Login', 'Logged in with demo account!');
+      }
+    } catch (error) {
+      Alert.alert('Demo Login Failed', error.message);
+    }
+  };
 
   return (
     <>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="light-content" backgroundColor="#667eea" />
       <SafeAreaView style={styles.container}>
-        <LinearGradient
-          colors={['#667eea', '#764ba2', '#f093fb']}
-          style={styles.gradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.keyboardView}
         >
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={styles.keyboardView}
-          >
-            {/* Animated Header Section */}
-            <View style={styles.header}>
-              <Animated.View
-                style={[
-                  styles.logoContainer,
-                  {
-                    transform: [{ scale: logoScale }],
-                  },
-                ]}
-              >
-                <LinearGradient
-                  colors={['rgba(255,255,255,0.3)', 'rgba(255,255,255,0.1)']}
-                  style={styles.logoGradient}
-                >
-                  <Ionicons name="calendar" size={50} color="#fff" />
-                </LinearGradient>
-              </Animated.View>
-              
-              <Animated.Text
-                style={[
-                  styles.title,
-                  {
-                    transform: [{ scale: logoScale }],
-                  },
-                ]}
-              >
-                BookEasy
-              </Animated.Text>
-              
-              <Animated.Text
-                style={[
-                  styles.subtitle,
-                  {
-                    opacity: formOpacity,
-                  },
-                ]}
-              >
-                Your appointments, simplified
-              </Animated.Text>
+          {/* Header Section */}
+          <View style={styles.header}>
+            <View style={styles.logoContainer}>
+              <Ionicons name="calendar" size={60} color="#fff" />
             </View>
+            <Text style={styles.title}>BookEasy</Text>
+            <Text style={styles.subtitle}>Your appointments, simplified</Text>
+          </View>
 
-            {/* Animated Form Section */}
-            <Animated.View
-              style={[
-                styles.formContainer,
-                {
-                  transform: [{ translateY: formTranslateY }],
-                  opacity: formOpacity,
-                },
-              ]}
-            >
-              <View style={styles.card}>
-                <Text style={styles.welcomeText}>Welcome Back!</Text>
-                <Text style={styles.signInText}>Sign in to continue</Text>
+          {/* Form Section */}
+          <View style={styles.formContainer}>
+            <View style={styles.card}>
+              <Text style={styles.welcomeText}>Welcome Back!</Text>
+              <Text style={styles.signInText}>Sign in to continue</Text>
 
-                {/* Email Input with Focus Animation */}
-                <Animated.View
-                  style={[
-                    styles.inputContainer,
-                    focusedInput === 'email' && styles.inputContainerFocused,
-                  ]}
-                >
-                  <Ionicons
-                    name="mail-outline"
-                    size={20}
-                    color={focusedInput === 'email' ? '#667eea' : '#999'}
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Email address"
-                    placeholderTextColor="#999"
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    onFocus={() => setFocusedInput('email')}
-                    onBlur={() => setFocusedInput(null)}
-                  />
-                </Animated.View>
+              {/* Demo Login Banner */}
+              <TouchableOpacity 
+                style={styles.demoBanner}
+                onPress={handleDemoLogin}
+                disabled={isLoading}
+              >
+                <Ionicons name="flash" size={20} color="#667eea" />
+                <Text style={styles.demoText}>Quick Demo Login</Text>
+                <Ionicons name="chevron-forward" size={16} color="#667eea" />
+              </TouchableOpacity>
 
-                {/* Password Input with Focus Animation */}
-                <Animated.View
-                  style={[
-                    styles.inputContainer,
-                    focusedInput === 'password' && styles.inputContainerFocused,
-                  ]}
-                >
-                  <Ionicons
-                    name="lock-closed-outline"
-                    size={20}
-                    color={focusedInput === 'password' ? '#667eea' : '#999'}
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Password"
-                    placeholderTextColor="#999"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={!showPassword}
-                    onFocus={() => setFocusedInput('password')}
-                    onBlur={() => setFocusedInput(null)}
-                  />
-                  <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}
-                    style={styles.eyeIcon}
-                  >
-                    <Ionicons
-                      name={showPassword ? 'eye-outline' : 'eye-off-outline'}
-                      size={20}
-                      color="#999"
-                    />
-                  </TouchableOpacity>
-                </Animated.View>
-
-                {/* Animated Login Button */}
-                <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
-                  <TouchableOpacity
-                    style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
-                    onPress={handleLogin}
-                    disabled={isLoading}
-                    activeOpacity={0.8}
-                  >
-                    <LinearGradient
-                      colors={['#667eea', '#764ba2']}
-                      style={styles.loginGradient}
-                      start={{ x: 0, y: 0 }}
-                      end={{ x: 1, y: 0 }}
-                    >
-                      {isLoading ? (
-                        <View style={styles.loadingContainer}>
-                          <Animated.View
-                            style={[
-                              styles.spinner,
-                              {
-                                transform: [{ rotate: spin }],
-                              },
-                            ]}
-                          />
-                          <Text style={styles.loginButtonText}>Signing In...</Text>
-                        </View>
-                      ) : (
-                        <Text style={styles.loginButtonText}>Sign In</Text>
-                      )}
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </Animated.View>
-
-                {/* Forgot Password */}
-                <TouchableOpacity style={styles.forgotPasswordContainer}>
-                  <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
-                </TouchableOpacity>
-
-                {/* Animated Divider */}
-                <View style={styles.dividerContainer}>
-                  <View style={styles.dividerLine} />
-                  <Text style={styles.dividerText}>OR</Text>
-                  <View style={styles.dividerLine} />
-                </View>
-
-                {/* Social Login Buttons with Hover Effects */}
-                <View style={styles.socialContainer}>
-                  <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
-                    <Ionicons name="logo-google" size={20} color="#DB4437" />
-                    <Text style={styles.socialButtonText}>Google</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={styles.socialButton} activeOpacity={0.7}>
-                    <Ionicons name="logo-apple" size={20} color="#000" />
-                    <Text style={styles.socialButtonText}>Apple</Text>
-                  </TouchableOpacity>
-                </View>
-
-                {/* Sign Up Link with Navigation */}
-                <View style={styles.signUpContainer}>
-                  <Text style={styles.signUpText}>Don't have an account? </Text>
-                  <Link href="/(auth)/register" asChild>
-                    <TouchableOpacity>
-                      <Text style={styles.signUpLink}>Sign Up</Text>
-                    </TouchableOpacity>
-                  </Link>
-                </View>
+              {/* Email Input */}
+              <View style={styles.inputContainer}>
+                <Ionicons name="mail-outline" size={20} color="#667eea" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email address"
+                  placeholderTextColor="#999"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  editable={!isLoading}
+                />
               </View>
-            </Animated.View>
 
-            {/* Floating Elements for Visual Interest */}
-            <View style={styles.floatingElements}>
-              <Animated.View style={[styles.floatingCircle, styles.circle1]} />
-              <Animated.View style={[styles.floatingCircle, styles.circle2]} />
-              <Animated.View style={[styles.floatingCircle, styles.circle3]} />
+              {/* Password Input */}
+              <View style={styles.inputContainer}>
+                <Ionicons name="lock-closed-outline" size={20} color="#667eea" style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Password"
+                  placeholderTextColor="#999"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  editable={!isLoading}
+                />
+                <TouchableOpacity 
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeIcon}
+                >
+                  <Ionicons 
+                    name={showPassword ? "eye-outline" : "eye-off-outline"} 
+                    size={20} 
+                    color="#999" 
+                  />
+                </TouchableOpacity>
+              </View>
+
+              {/* Login Button */}
+              <TouchableOpacity 
+                style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+                onPress={handleLogin}
+                disabled={isLoading}
+              >
+                <Text style={styles.loginButtonText}>
+                  {isLoading ? 'Signing In...' : 'Sign In'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Demo Credentials */}
+              <View style={styles.credentialsContainer}>
+                <Text style={styles.credentialsTitle}>Demo Credentials:</Text>
+                <Text style={styles.credentialsText}>Email: demo@bookeasy.com</Text>
+                <Text style={styles.credentialsText}>Password: password123</Text>
+              </View>
+
+              {/* Forgot Password */}
+              <TouchableOpacity style={styles.forgotPasswordContainer}>
+                <Text style={styles.forgotPasswordText}>Forgot your password?</Text>
+              </TouchableOpacity>
+
+              {/* Divider */}
+              <View style={styles.dividerContainer}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>OR</Text>
+                <View style={styles.dividerLine} />
+              </View>
+
+              {/* Social Login Buttons */}
+              <View style={styles.socialContainer}>
+                <TouchableOpacity style={styles.socialButton}>
+                  <Ionicons name="logo-google" size={20} color="#DB4437" />
+                  <Text style={styles.socialButtonText}>Google</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity style={styles.socialButton}>
+                  <Ionicons name="logo-apple" size={20} color="#000" />
+                  <Text style={styles.socialButtonText}>Apple</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Sign Up Link */}
+              <View style={styles.signUpContainer}>
+                <Text style={styles.signUpText}>Don't have an account? </Text>
+                <Link href="/(auth)/register" asChild>
+                  <TouchableOpacity>
+                    <Text style={styles.signUpLink}>Sign Up</Text>
+                  </TouchableOpacity>
+                </Link>
+              </View>
             </View>
-          </KeyboardAvoidingView>
-        </LinearGradient>
+          </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </>
   );
@@ -329,9 +185,7 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  gradient: {
-    flex: 1,
+    backgroundColor: '#667eea',
   },
   keyboardView: {
     flex: 1,
@@ -342,18 +196,17 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   logoContainer: {
-    marginBottom: 20,
-  },
-  logoGradient: {
     width: 100,
     height: 100,
     borderRadius: 50,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 16,
+    shadowRadius: 8,
     elevation: 8,
   },
   title: {
@@ -361,9 +214,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 8,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
   },
   subtitle: {
     fontSize: 16,
@@ -377,13 +227,13 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 24,
-    padding: 32,
+    borderRadius: 20,
+    padding: 30,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 20 },
-    shadowOpacity: 0.25,
-    shadowRadius: 25,
-    elevation: 15,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
   },
   welcomeText: {
     fontSize: 28,
@@ -396,31 +246,39 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: 20,
+  },
+  demoBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f0f2ff',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#667eea',
+  },
+  demoText: {
+    color: '#667eea',
+    fontWeight: '600',
+    marginHorizontal: 8,
+    fontSize: 14,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: '#e0e0e0',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    paddingVertical: 15,
     marginBottom: 20,
     backgroundColor: '#f8f9fa',
-    transition: 'all 0.3s ease',
-  },
-  inputContainerFocused: {
-    borderColor: '#667eea',
-    backgroundColor: '#fff',
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
   },
   inputIcon: {
-    marginRight: 12,
+    marginRight: 10,
   },
   input: {
     flex: 1,
@@ -428,47 +286,50 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   eyeIcon: {
-    padding: 8,
+    padding: 5,
   },
   loginButton: {
-    borderRadius: 16,
-    marginBottom: 24,
-    overflow: 'hidden',
+    backgroundColor: '#667eea',
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 15,
     shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    shadowRadius: 8,
+    elevation: 4,
   },
   loginButtonDisabled: {
     opacity: 0.7,
-  },
-  loginGradient: {
-    paddingVertical: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   loginButtonText: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
   },
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  credentialsContainer: {
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 20,
+    borderLeftWidth: 3,
+    borderLeftColor: '#667eea',
   },
-  spinner: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 3,
-    borderColor: '#fff',
-    borderTopColor: 'transparent',
-    marginRight: 12,
+  credentialsTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#667eea',
+    marginBottom: 4,
+  },
+  credentialsText: {
+    fontSize: 11,
+    color: '#666',
+    fontFamily: 'monospace',
   },
   forgotPasswordContainer: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 25,
   },
   forgotPasswordText: {
     color: '#667eea',
@@ -478,7 +339,7 @@ const styles = StyleSheet.create({
   dividerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 25,
   },
   dividerLine: {
     flex: 1,
@@ -489,12 +350,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     color: '#999',
     fontSize: 14,
-    fontWeight: '500',
   },
   socialContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 32,
+    marginBottom: 25,
   },
   socialButton: {
     flexDirection: 'row',
@@ -502,8 +362,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    borderRadius: 16,
-    paddingVertical: 14,
+    borderRadius: 12,
+    paddingVertical: 12,
     paddingHorizontal: 20,
     flex: 0.48,
     backgroundColor: '#f8f9fa',
@@ -527,36 +387,5 @@ const styles = StyleSheet.create({
     color: '#667eea',
     fontSize: 14,
     fontWeight: '600',
-  },
-  floatingElements: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    pointerEvents: 'none',
-  },
-  floatingCircle: {
-    position: 'absolute',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 50,
-  },
-  circle1: {
-    width: 100,
-    height: 100,
-    top: '10%',
-    right: '10%',
-  },
-  circle2: {
-    width: 60,
-    height: 60,
-    top: '60%',
-    left: '5%',
-  },
-  circle3: {
-    width: 80,
-    height: 80,
-    bottom: '20%',
-    right: '20%',
   },
 });
