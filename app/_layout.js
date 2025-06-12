@@ -1,3 +1,4 @@
+// app/_layout.js
 import { Stack } from 'expo-router';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
@@ -26,12 +27,21 @@ function RootLayoutNav() {
       {isAuthenticated ? (
         // User is logged in - show main app
         <>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="booking" />
+          <Stack.Screen 
+            name="(tabs)" 
+            options={{ headerShown: false }} 
+          />
+          <Stack.Screen 
+            name="booking" 
+            options={{ headerShown: false }} 
+          />
         </>
       ) : (
         // User is not logged in - show auth screens
-        <Stack.Screen name="(auth)" />
+        <Stack.Screen 
+          name="(auth)" 
+          options={{ headerShown: false }} 
+        />
       )}
     </Stack>
   );
