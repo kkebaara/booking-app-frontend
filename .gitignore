@@ -24,3 +24,5 @@ yarn-error.log*
 .Trashes
 ehthumbs.db
 Thumbs.dbconfig/firebase.js
+.env
+.env.local
