@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
-import { useAuth } from '../contexts/AuthContext'; // Fixed: Changed from ../../ to ../
+import { useAuth } from '../contexts/AuthContext'; // FIXED: Changed from ../../ to ../
 
 export default function LoginScreen() {
 	const [email, setEmail] = useState('');
@@ -41,7 +41,6 @@ export default function LoginScreen() {
 		try {
 			const result = await login(email.trim().toLowerCase(), password);
 			if (result.success) {
-				// Navigation happens automatically due to auth state change
 				console.log('Login successful!');
 			}
 		} catch (error) {
@@ -90,7 +89,6 @@ export default function LoginScreen() {
 
 		setIsSubmitting(true);
 		try {
-			// Extract name from email for quick signup
 			const emailName = email.split('@')[0];
 			const firstName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
 
@@ -122,13 +120,11 @@ export default function LoginScreen() {
 
 		setIsSubmitting(true);
 		try {
-			// Try to login with demo account
 			const result = await login('demo@bookeasy.com', 'demo123456');
 			if (result.success) {
 				Alert.alert('Demo Login', 'Welcome to the demo! 🎉');
 			}
 		} catch (error) {
-			// If demo account doesn't exist, create it
 			if (
 				error.message.includes('No account found') ||
 				error.message.includes('user-not-found')
@@ -215,7 +211,6 @@ export default function LoginScreen() {
 					behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
 					style={styles.keyboardView}
 				>
-					{/* Header Section */}
 					<View style={styles.header}>
 						<View style={styles.logoContainer}>
 							<Ionicons name='calendar' size={60} color='#fff' />
@@ -224,13 +219,11 @@ export default function LoginScreen() {
 						<Text style={styles.subtitle}>Your appointments, simplified</Text>
 					</View>
 
-					{/* Form Section */}
 					<View style={styles.formContainer}>
 						<View style={styles.card}>
 							<Text style={styles.welcomeText}>Welcome Back!</Text>
 							<Text style={styles.signInText}>Sign in to continue</Text>
 
-							{/* Quick Demo Login */}
 							<TouchableOpacity
 								style={[styles.demoBanner, isProcessing && styles.disabled]}
 								onPress={handleDemoLogin}
@@ -247,7 +240,6 @@ export default function LoginScreen() {
 								)}
 							</TouchableOpacity>
 
-							{/* Email Input */}
 							<View style={styles.inputContainer}>
 								<Ionicons
 									name='mail-outline'
@@ -271,7 +263,6 @@ export default function LoginScreen() {
 								)}
 							</View>
 
-							{/* Password Input */}
 							<View style={styles.inputContainer}>
 								<Ionicons
 									name='lock-closed-outline'
@@ -301,7 +292,6 @@ export default function LoginScreen() {
 								</TouchableOpacity>
 							</View>
 
-							{/* Sign In Button */}
 							<TouchableOpacity
 								style={[
 									styles.loginButton,
@@ -320,7 +310,6 @@ export default function LoginScreen() {
 								)}
 							</TouchableOpacity>
 
-							{/* Demo Credentials Info */}
 							<View style={styles.credentialsContainer}>
 								<Text style={styles.credentialsTitle}>
 									💡 Demo Credentials:
@@ -334,7 +323,6 @@ export default function LoginScreen() {
 								</Text>
 							</View>
 
-							{/* Forgot Password */}
 							<TouchableOpacity
 								style={styles.forgotPasswordContainer}
 								onPress={handleForgotPassword}
@@ -345,14 +333,12 @@ export default function LoginScreen() {
 								</Text>
 							</TouchableOpacity>
 
-							{/* Divider */}
 							<View style={styles.dividerContainer}>
 								<View style={styles.dividerLine} />
 								<Text style={styles.dividerText}>OR</Text>
 								<View style={styles.dividerLine} />
 							</View>
 
-							{/* Social Login Buttons */}
 							<View style={styles.socialContainer}>
 								<TouchableOpacity
 									style={[styles.socialButton, isProcessing && styles.disabled]}
@@ -371,7 +357,6 @@ export default function LoginScreen() {
 								</TouchableOpacity>
 							</View>
 
-							{/* Sign Up Link */}
 							<View style={styles.signUpContainer}>
 								<Text style={styles.signUpText}>Don't have an account? </Text>
 								<Link href='/(auth)/register' asChild>
@@ -388,7 +373,6 @@ export default function LoginScreen() {
 								</Link>
 							</View>
 
-							{/* Real Backend Status */}
 							<View style={styles.statusContainer}>
 								<View style={styles.statusIndicator} />
 								<Text style={styles.statusText}>

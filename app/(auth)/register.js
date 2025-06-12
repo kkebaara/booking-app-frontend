@@ -16,7 +16,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link, useRouter } from 'expo-router';
-import { useAuth } from '../contexts/AuthContext'; // Fixed: Changed from ../../ to ../
+import { useAuth } from '../contexts/AuthContext'; // FIXED: Changed from ../../ to ../
 
 export default function RegisterScreen() {
 	const [formData, setFormData] = useState({
@@ -35,7 +35,6 @@ export default function RegisterScreen() {
 	const router = useRouter();
 	const { register } = useAuth();
 
-	// Animation values
 	const formOpacity = useRef(new Animated.Value(0)).current;
 	const formTranslateY = useRef(new Animated.Value(30)).current;
 	const buttonScale = useRef(new Animated.Value(1)).current;
@@ -90,7 +89,6 @@ export default function RegisterScreen() {
 	const handleRegister = async () => {
 		if (!validateForm()) return;
 
-		// Button press animation
 		Animated.sequence([
 			Animated.timing(buttonScale, {
 				toValue: 0.95,
@@ -106,7 +104,6 @@ export default function RegisterScreen() {
 
 		setIsLoading(true);
 
-		// Loading spinner animation
 		const spinAnimation = Animated.loop(
 			Animated.timing(spinValue, {
 				toValue: 1,
@@ -117,7 +114,6 @@ export default function RegisterScreen() {
 		spinAnimation.start();
 
 		try {
-			// Use the register function from AuthContext
 			const result = await register(formData);
 
 			if (result.success) {
@@ -130,7 +126,6 @@ export default function RegisterScreen() {
 						text: 'Continue',
 						onPress: () => {
 							// Navigation will happen automatically due to auth state change
-							// since register auto-logs in the user
 						},
 					},
 				]);
@@ -205,7 +200,6 @@ export default function RegisterScreen() {
 							showsVerticalScrollIndicator={false}
 							contentContainerStyle={styles.scrollContainer}
 						>
-							{/* Header */}
 							<View style={styles.header}>
 								<View style={styles.logoContainer}>
 									<LinearGradient
@@ -221,7 +215,6 @@ export default function RegisterScreen() {
 								</Text>
 							</View>
 
-							{/* Form */}
 							<Animated.View
 								style={[
 									styles.formContainer,
@@ -237,7 +230,6 @@ export default function RegisterScreen() {
 										Fill in your details to get started
 									</Text>
 
-									{/* Name Fields Row */}
 									<View style={styles.nameRow}>
 										<View style={styles.nameField}>
 											<InputField
@@ -263,7 +255,6 @@ export default function RegisterScreen() {
 										</View>
 									</View>
 
-									{/* Email Field */}
 									<InputField
 										icon='mail-outline'
 										placeholder='Email address'
@@ -274,7 +265,6 @@ export default function RegisterScreen() {
 										field='email'
 									/>
 
-									{/* Phone Field */}
 									<InputField
 										icon='call-outline'
 										placeholder='Phone number (optional)'
@@ -285,7 +275,6 @@ export default function RegisterScreen() {
 										field='phone'
 									/>
 
-									{/* Password Field */}
 									<Animated.View
 										style={[
 											styles.inputContainer,
@@ -325,7 +314,6 @@ export default function RegisterScreen() {
 										</TouchableOpacity>
 									</Animated.View>
 
-									{/* Confirm Password Field */}
 									<Animated.View
 										style={[
 											styles.inputContainer,
@@ -373,7 +361,6 @@ export default function RegisterScreen() {
 										</TouchableOpacity>
 									</Animated.View>
 
-									{/* Register Button */}
 									<Animated.View
 										style={{ transform: [{ scale: buttonScale }] }}
 									>
@@ -415,14 +402,12 @@ export default function RegisterScreen() {
 										</TouchableOpacity>
 									</Animated.View>
 
-									{/* Terms */}
 									<Text style={styles.termsText}>
 										By creating an account, you agree to our{' '}
 										<Text style={styles.termsLink}>Terms of Service</Text> and{' '}
 										<Text style={styles.termsLink}>Privacy Policy</Text>
 									</Text>
 
-									{/* Sign In Link */}
 									<View style={styles.signInContainer}>
 										<Text style={styles.signInText}>
 											Already have an account?{' '}
@@ -436,7 +421,6 @@ export default function RegisterScreen() {
 								</View>
 							</Animated.View>
 
-							{/* Floating Elements for Visual Interest */}
 							<View style={styles.floatingElements}>
 								<Animated.View
 									style={[styles.floatingCircle, styles.circle1]}
